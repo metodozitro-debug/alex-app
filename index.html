@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALEX - Asistente Financiero Personal</title>
+    <title>ALEX - Gestión Financiera Personal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -13,13 +14,13 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            color: #111827;
         }
 
         .container {
@@ -27,33 +28,58 @@
             width: 100%;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            gap: 4rem;
             align-items: center;
+            padding: 2rem;
         }
 
         .hero-section {
             padding: 2rem;
         }
 
-        .logo {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .brand-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: #1e40af;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1e40af;
+            letter-spacing: -0.5px;
         }
 
         .hero-title {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #111827;
             margin-bottom: 1rem;
             line-height: 1.2;
+            letter-spacing: -1px;
         }
 
         .hero-subtitle {
-            font-size: 1.3rem;
-            color: #475569;
-            margin-bottom: 2rem;
+            font-size: 1.15rem;
+            color: #6b7280;
+            margin-bottom: 2.5rem;
             line-height: 1.6;
         }
 
@@ -61,29 +87,35 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            margin-bottom: 2rem;
         }
 
         .feature-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 1rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border: 1px solid #e2e8f0;
+            padding: 1.2rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .feature-item:hover {
+            border-color: #1e40af;
+            background: #ffffff;
         }
 
         .feature-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            background: #1e40af;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
         }
 
         .feature-text {
@@ -91,53 +123,52 @@
         }
 
         .feature-text h3 {
-            font-size: 1rem;
-            color: #1e293b;
+            font-size: 0.95rem;
+            color: #111827;
             margin-bottom: 0.3rem;
             font-weight: 600;
         }
 
         .feature-text p {
             font-size: 0.85rem;
-            color: #64748b;
+            color: #6b7280;
+            line-height: 1.5;
         }
 
         .login-section {
-            background: white;
+            background: #f9fafb;
             padding: 3rem;
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
         }
 
         .login-header {
-            text-align: center;
             margin-bottom: 2rem;
         }
 
         .login-title {
-            font-size: 2rem;
-            color: #1e293b;
+            font-size: 1.8rem;
+            color: #111827;
             margin-bottom: 0.5rem;
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .login-subtitle {
-            color: #64748b;
+            color: #6b7280;
             font-size: 0.95rem;
         }
 
         .login-benefits {
-            background: #f8fafc;
-            border-radius: 12px;
+            background: #ffffff;
+            border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e5e7eb;
         }
 
         .login-benefits h4 {
             font-size: 0.9rem;
-            color: #475569;
+            color: #374151;
             margin-bottom: 1rem;
             font-weight: 600;
         }
@@ -153,65 +184,71 @@
             align-items: center;
             gap: 0.7rem;
             font-size: 0.9rem;
-            color: #475569;
+            color: #374151;
         }
 
         .benefit-check {
-            color: #10b981;
-            font-weight: bold;
-            font-size: 1.1rem;
+            color: #065f46;
+            font-size: 1rem;
         }
 
         .google-btn {
             width: 100%;
             background: white;
-            color: #1e293b;
-            border: 2px solid #e2e8f0;
+            color: #111827;
+            border: 1px solid #d1d5db;
             padding: 1rem;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.8rem;
-            transition: all 0.3s;
+            transition: all 0.2s;
             margin-bottom: 1.5rem;
         }
 
         .google-btn:hover {
-            background: #f8fafc;
-            border-color: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+            background: #ffffff;
+            border-color: #1e40af;
+            box-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
         }
 
         .google-icon {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
         }
 
         .security-note {
             text-align: center;
             font-size: 0.8rem;
-            color: #64748b;
+            color: #6b7280;
             padding: 1rem;
-            background: #f0f9ff;
-            border-radius: 8px;
-            border: 1px solid #bae6fd;
+            background: #eff6ff;
+            border-radius: 6px;
+            border: 1px solid #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
         }
 
         .security-icon {
-            color: #2563eb;
-            margin-right: 0.3rem;
+            color: #1e40af;
         }
 
         .footer {
             grid-column: 1 / -1;
             text-align: center;
-            padding-top: 2rem;
-            color: #64748b;
+            padding-top: 3rem;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 2rem;
+        }
+
+        .footer p {
+            color: #6b7280;
             font-size: 0.85rem;
         }
 
@@ -225,8 +262,12 @@
                 text-align: center;
             }
 
+            .logo-container {
+                justify-content: center;
+            }
+
             .hero-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
 
             .login-section {
@@ -239,40 +280,55 @@
     <div class="container">
         <!-- Hero Section -->
         <div class="hero-section">
-            <div class="logo">💰</div>
-            <h1 class="hero-title">ALEX</h1>
-            <p class="hero-subtitle">Tu asistente financiero personal que sincroniza automáticamente tus alertas bancarias</p>
+            <div class="brand-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="logo-text">ALEX</div>
+                </div>
+                <h1 class="hero-title">Gestión financiera personal inteligente</h1>
+                <p class="hero-subtitle">Sincronización automática de alertas bancarias para un control total de tus finanzas</p>
+            </div>
             
             <div class="features">
                 <div class="feature-item">
-                    <div class="feature-icon">📧</div>
+                    <div class="feature-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
                     <div class="feature-text">
                         <h3>Sincronización automática</h3>
-                        <p>Conecta tus correos y sincroniza alertas de Bancolombia, Nequi y Daviplata</p>
+                        <p>Conecta tus cuentas de correo y sincroniza alertas de Bancolombia, Nequi y Daviplata de forma automática</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
-                    <div class="feature-icon">📊</div>
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
                     <div class="feature-text">
-                        <h3>Dashboard inteligente</h3>
-                        <p>Visualiza tus ingresos, gastos y balance en tiempo real</p>
+                        <h3>Análisis en tiempo real</h3>
+                        <p>Dashboard con visualización completa de ingresos, gastos y balance actualizado al instante</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
-                    <div class="feature-icon">🔒</div>
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
                     <div class="feature-text">
-                        <h3>100% seguro</h3>
-                        <p>Tus datos están protegidos con encriptación de nivel bancario</p>
+                        <h3>Seguridad bancaria</h3>
+                        <p>Protección de datos con encriptación de nivel financiero y cumplimiento de estándares internacionales</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
-                    <div class="feature-icon">💯</div>
+                    <div class="feature-icon">
+                        <i class="fas fa-infinity"></i>
+                    </div>
                     <div class="feature-text">
-                        <h3>Totalmente gratis</h3>
-                        <p>Sin costos ocultos, sin suscripciones, sin límites</p>
+                        <h3>Sin límites ni costos</h3>
+                        <p>Plataforma completamente gratuita, sin restricciones de uso ni suscripciones requeridas</p>
                     </div>
                 </div>
             </div>
@@ -281,28 +337,28 @@
         <!-- Login Section -->
         <div class="login-section">
             <div class="login-header">
-                <h2 class="login-title">Comienza ahora</h2>
-                <p class="login-subtitle">Inicia sesión para empezar a controlar tus finanzas</p>
+                <h2 class="login-title">Acceso a la plataforma</h2>
+                <p class="login-subtitle">Inicia sesión para comenzar a gestionar tus finanzas</p>
             </div>
 
             <div class="login-benefits">
-                <h4>¿Por qué usar ALEX?</h4>
+                <h4>Beneficios de usar ALEX</h4>
                 <div class="benefits-list">
                     <div class="benefit-item">
-                        <span class="benefit-check">✓</span>
-                        <span>Ahorra tiempo: todo automático</span>
+                        <i class="fas fa-check benefit-check"></i>
+                        <span>Automatización completa de registro de transacciones</span>
                     </div>
                     <div class="benefit-item">
-                        <span class="benefit-check">✓</span>
-                        <span>Toma mejores decisiones financieras</span>
+                        <i class="fas fa-check benefit-check"></i>
+                        <span>Toma de decisiones basada en datos reales</span>
                     </div>
                     <div class="benefit-item">
-                        <span class="benefit-check">✓</span>
-                        <span>Controla tus gastos fácilmente</span>
+                        <i class="fas fa-check benefit-check"></i>
+                        <span>Control granular de gastos e ingresos</span>
                     </div>
                     <div class="benefit-item">
-                        <span class="benefit-check">✓</span>
-                        <span>Accede desde cualquier dispositivo</span>
+                        <i class="fas fa-check benefit-check"></i>
+                        <span>Acceso multiplataforma desde cualquier dispositivo</span>
                     </div>
                 </div>
             </div>
@@ -314,28 +370,26 @@
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                Continuar con Google
+                Iniciar sesión con Google
             </button>
 
             <div class="security-note">
-                <span class="security-icon">🔒</span>
-                Tu información está protegida. Solo usamos Google para autenticación segura.
+                <i class="fas fa-lock security-icon"></i>
+                <span>Autenticación segura. Sus datos están protegidos.</span>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>ALEX &copy; 2025 - Asistente Financiero Personal</p>
+            <p>ALEX © 2025 - Plataforma de Gestión Financiera Personal</p>
         </div>
     </div>
 
     <script>
-        // Configuración de Supabase
         const SUPABASE_URL = 'https://qvpcilvezzxmtrilgavz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cGNpbHZlenp4bXRyaWxnYXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwODM0MDYsImV4cCI6MjA3OTY1OTQwNn0.42EEcyW9e_-Wz7SpDNTumhfvbAGKPLIzr4c5FDw3npQ';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Verificar si ya está autenticado
         async function checkExistingSession() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
@@ -343,7 +397,6 @@
             }
         }
 
-        // Login con Google
         async function loginWithGoogle() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -353,12 +406,11 @@
             });
 
             if (error) {
-                console.error('Error en login:', error);
-                alert('Error al iniciar sesión. Por favor intenta de nuevo.');
+                console.error('Error en autenticación:', error);
+                alert('Error al iniciar sesión. Por favor, intente nuevamente.');
             }
         }
 
-        // Verificar sesión al cargar
         checkExistingSession();
     </script>
 </body>
