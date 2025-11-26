@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - ALEX</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #ffffff;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .navbar-menu a {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .navbar-menu a:hover {
+            color: #2563eb;
+        }
+
+        .navbar-menu a.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 4px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .settings-header h1 {
+            font-size: 1.8rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .btn-add-email {
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-add-email:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .email-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .email-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .email-item:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            background: #ffffff;
+        }
+
+        .email-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .email-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .email-details h3 {
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .email-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status-dot.inactive {
+            background: #ef4444;
+        }
+
+        .email-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .btn-delete {
+            background: #fff;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .navbar-menu {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .settings-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .email-item {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .email-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">💰 ALEX</div>
+        <div class="navbar-menu">
+            <a href="alex-dashboard.html">Dashboard</a>
+            <a href="alex-settings.html" class="active">Configuración</a>
+        </div>
+        <div class="user-info">
+            <img id="userAvatar" class="user-avatar" src="" alt="User">
+            <span id="userName"></span>
+            <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <div class="settings-card">
+            <div class="settings-header">
+                <h1>📧 Correos Conectados</h1>
+                <button class="btn-add-email" onclick="connectNewEmail()">
+                    <span>➕</span>
+                    <span>Conectar nuevo correo</span>
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando correos...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📭</div>
+                <h3>No hay correos conectados</h3>
+                <p>Conecta tu cuenta de Gmail para empezar a sincronizar tus alertas bancarias automáticamente.</p>
+            </div>
+
+            <!-- Email List -->
+            <div id="emailList" class="email-list" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://qvpcilvezzxmtrilgavz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cGNpbHZlenp4bXRyaWxnYXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwODM0MDYsImV4cCI6MjA3OTY1OTQwNn0.42EEcyW9e_-Wz7SpDNTumhfvbAGKPLIzr4c5FDw3npQ';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Verificar autenticación
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                window.location.href = 'index.html';
+                return null;
+            }
+
+            // Mostrar info del usuario
+            document.getElementById('userName').textContent = user.user_metadata.name || user.email;
+            document.getElementById('userAvatar').src = user.user_metadata.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
+
+            return user;
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Cargar correos conectados
+        async function loadConnectedEmails() {
+            const user = await checkAuth();
+            if (!user) return;
+
+            try {
+                const { data: emails, error } = await supabase
+                    .from('connected_emails')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (error) throw error;
+
+                if (!emails || emails.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    return;
+                }
+
+                renderEmailList(emails);
+            } catch (error) {
+                console.error('Error cargando correos:', error);
+                alert('Error al cargar los correos conectados');
+            }
+        }
+
+        // Renderizar lista de correos
+        function renderEmailList(emails) {
+            const emailList = document.getElementById('emailList');
+            emailList.style.display = 'flex';
+            
+            emailList.innerHTML = emails.map(email => `
+                <div class="email-item">
+                    <div class="email-info">
+                        <div class="email-icon">${email.email.charAt(0).toUpperCase()}</div>
+                        <div class="email-details">
+                            <h3>${email.email}</h3>
+                            <div class="email-status">
+                                <span class="status-dot ${email.is_active ? '' : 'inactive'}"></span>
+                                <span>${email.is_active ? 'Activo' : 'Inactivo'}</span>
+                                ${email.last_sync_at ? `• Última sincronización: ${formatDate(email.last_sync_at)}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="email-actions">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${email.is_active ? 'checked' : ''} 
+                                   onchange="toggleEmail('${email.id}', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <button class="btn-delete" onclick="deleteEmail('${email.id}', '${email.email}')">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Conectar nuevo correo (por ahora muestra alerta)
+        function connectNewEmail() {
+            alert('🚧 Funcionalidad en desarrollo\n\nPróximamente podrás conectar múltiples cuentas de Gmail usando OAuth de Google para sincronizar tus alertas bancarias automáticamente.');
+        }
+
+        // Activar/desactivar correo
+        async function toggleEmail(emailId, isActive) {
+            try {
+                const { error } = await supabase
+                    .from('connected_emails')
+                    .update({ is_active: isActive })
+                    .eq('id', emailId);
+
+                if (error) throw error;
+
+                console.log(`Correo ${isActive ? 'activado' : 'desactivado'}`);
+            } catch (error) {
+                console.error('Error al actualizar correo:', error);
+                alert('Error al actualizar el estado del correo');
+                loadConnectedEmails(); // Recargar para revertir el cambio visual
+            }
+        }
+
+        // Eliminar correo
+        async function deleteEmail(emailId, emailAddress) {
+            if (!confirm(`¿Estás seguro de eliminar ${emailAddress}?\n\nEsta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('connected_emails')
+                    .delete()
+                    .eq('id', emailId);
+
+                if (error) throw error;
+
+                alert('✅ Correo eliminado exitosamente');
+                loadConnectedEmails(); // Recargar lista
+            } catch (error) {
+                console.error('Error al eliminar correo:', error);
+                alert('Error al eliminar el correo');
+            }
+        }
+
+        // Inicializar
+        loadConnectedEmails();
+    </script>
+</body>
+</html>
+            
