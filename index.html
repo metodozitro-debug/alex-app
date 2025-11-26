@@ -369,7 +369,7 @@
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + '/alex-dashboard.html'
+                        redirectTo: window.location.origin + '/alex-app/alex-dashboard.html'
                     }
                 });
 
