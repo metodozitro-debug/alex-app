@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALEX - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%);
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon { font-size: 24px; color: #10b981; }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #a0a0a0;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #ef4444;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-value.positive { color: #10b981; }
+        .stat-value.negative { color: #ef4444; }
+        .stat-value.neutral { color: #ffffff; }
+
+        .stat-change {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #666;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .search-input::placeholder { color: #555; }
+
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Space Grotesk', sans-serif;
+            min-width: 140px;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .filter-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .type-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .type-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #888;
+            font-size: 14px;
+            font-family: 'Space Grotesk', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .type-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .type-btn.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #10b981;
+        }
+
+        .clear-filters {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #666;
+            font-size: 13px;
+            font-family: 'Space Grotesk', sans-serif;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .clear-filters:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .transactions-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .transactions-title { font-size: 16px; font-weight: 600; }
+        .transactions-count { font-size: 13px; color: #666; }
+
+        .transactions-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tx-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .tx-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .tx-icon.income {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .tx-icon.expense {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .tx-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tx-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .tx-details {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .tx-bank-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .tx-bank-dot.bancolombia { background: #fdda24; }
+        .tx-bank-dot.nequi { background: #e6007e; }
+        .tx-bank-dot.daviplata { background: #ed1c24; }
+
+        .tx-amount {
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tx-amount.income { color: #10b981; }
+        .tx-amount.expense { color: #ef4444; }
+
+        .tx-balance {
+            font-size: 12px;
+            color: #555;
+            margin-top: 2px;
+            text-align: right;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .empty-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .empty-text { font-size: 14px; color: #666; }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text {
+            color: #a0a0a0;
+            margin-bottom: 16px;
+        }
+
+        .welcome-note {
+            font-size: 13px;
+            color: #666;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container { padding: 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .filters-row { flex-direction: column; align-items: stretch; }
+            .filter-group { width: 100%; }
+            .filter-select, .filter-input { width: 100%; }
+            .type-buttons { width: 100%; }
+            .type-btn { flex: 1; }
+            .clear-filters { margin-left: 0; width: 100%; }
+            .user-name { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">◈</span>
+            <span class="logo-text">ALEX</span>
+        </div>
+        <div class="user-menu">
+            <span class="user-name" id="userEmail">Cargando...</span>
+            <div class="user-avatar" id="userAvatar">?</div>
+            <button class="logout-btn" onclick="handleLogout()">Salir</button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner" id="welcomeBanner">
+            <h2 class="welcome-title">¡Bienvenido a ALEX! 🎉</h2>
+            <p class="welcome-text">Tu cuenta está lista. Abajo verás datos de ejemplo mientras configuramos la lectura de correos.</p>
+            <p class="welcome-note">💡 Próximo paso: Configurar la conexión con Gmail para leer tus alertas bancarias automáticamente.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Entradas este mes</div>
+                <div class="stat-value positive" id="totalIncome">+$2.150.000</div>
+                <div class="stat-change">12 transacciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Salidas este mes</div>
+                <div class="stat-value negative" id="totalExpense">-$1.340.000</div>
+                <div class="stat-change">28 transacciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Balance</div>
+                <div class="stat-value neutral" id="balance">$810.000</div>
+                <div class="stat-change">Diferencia del mes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total movimientos</div>
+                <div class="stat-value neutral" id="totalTx">40</div>
+                <div class="stat-change">Este mes</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="controls-section">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, comercio o descripción...">
+                </div>
+            </div>
+
+            <div class="filters-row">
+                <div class="filter-group">
+                    <span class="filter-label">Tipo</span>
+                    <div class="type-buttons">
+                        <button class="type-btn active" data-type="all">Todos</button>
+                        <button class="type-btn" data-type="income">Entradas</button>
+                        <button class="type-btn" data-type="expense">Salidas</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">Banco</span>
+                    <select class="filter-select" id="bankFilter">
+                        <option value="all">Todos los bancos</option>
+                        <option value="bancolombia">Bancolombia</option>
+                        <option value="nequi">Nequi</option>
+                        <option value="daviplata">Daviplata</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">Desde</span>
+                    <input type="date" class="filter-input" id="dateFrom">
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">Hasta</span>
+                    <input type="date" class="filter-input" id="dateTo">
+                </div>
+
+                <button class="clear-filters" id="clearFilters">Limpiar filtros</button>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="transactions-section">
+            <div class="transactions-header">
+                <span class="transactions-title">Movimientos</span>
+                <span class="transactions-count" id="txCount">Mostrando 20 movimientos (datos de ejemplo)</span>
+            </div>
+            <div class="transactions-list" id="transactionsList"></div>
+        </div>
+    </main>
+
+    <script>
+        // Configuración Supabase
+        const SUPABASE_URL = 'https://qvpcilvezzxmtrilgavz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cGNpbHZlenp4bXRyaWxnYXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwODM0MDYsImV4cCI6MjA3OTY1OTQwNn0.42EEcyW9e_-Wz7SpDNTumhfvbAGKPLIzr4c5FDw3npQ';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Datos de ejemplo
+        const sampleTransactions = [
+            { id: 1, type: 'income', name: 'Juan Carlos Pérez', amount: 500000, bank: 'bancolombia', date: '2025-01-24', time: '10:30', account: '****4532', description: 'Transferencia recibida' },
+            { id: 2, type: 'expense', name: 'Claro Colombia', amount: 85000, bank: 'nequi', date: '2025-01-24', time: '09:15', account: '****7821', description: 'Pago de servicios' },
+            { id: 3, type: 'income', name: 'María García López', amount: 150000, bank: 'daviplata', date: '2025-01-23', time: '16:45', account: '****3156', description: 'Transferencia recibida' },
+            { id: 4, type: 'expense', name: 'Rappi', amount: 45000, bank: 'nequi', date: '2025-01-23', time: '14:20', account: '****7821', description: 'Compra en línea' },
+            { id: 5, type: 'expense', name: 'Netflix', amount: 38900, bank: 'bancolombia', date: '2025-01-23', time: '03:00', account: '****4532', description: 'Suscripción mensual' },
+            { id: 6, type: 'income', name: 'Empresa ABC S.A.S', amount: 1200000, bank: 'bancolombia', date: '2025-01-22', time: '08:00', account: '****4532', description: 'Pago nómina' },
+            { id: 7, type: 'expense', name: 'Éxito', amount: 234500, bank: 'bancolombia', date: '2025-01-22', time: '19:30', account: '****4532', description: 'Compra en establecimiento' },
+            { id: 8, type: 'expense', name: 'EPM Energía', amount: 145000, bank: 'daviplata', date: '2025-01-21', time: '10:00', account: '****3156', description: 'Pago de servicios' },
+            { id: 9, type: 'expense', name: 'Spotify', amount: 16900, bank: 'nequi', date: '2025-01-21', time: '02:00', account: '****7821', description: 'Suscripción mensual' },
+            { id: 10, type: 'income', name: 'Pedro Martínez', amount: 300000, bank: 'nequi', date: '2025-01-20', time: '15:30', account: '****7821', description: 'Transferencia recibida' },
+            { id: 11, type: 'expense', name: 'D1', amount: 87600, bank: 'daviplata', date: '2025-01-20', time: '11:45', account: '****3156', description: 'Compra en establecimiento' },
+            { id: 12, type: 'expense', name: 'Uber', amount: 23400, bank: 'nequi', date: '2025-01-20', time: '08:20', account: '****7821', description: 'Servicio de transporte' },
+            { id: 13, type: 'expense', name: 'Movistar', amount: 95000, bank: 'bancolombia', date: '2025-01-19', time: '09:00', account: '****4532', description: 'Pago de servicios' },
+            { id: 14, type: 'expense', name: 'Amazon Prime', amount: 24900, bank: 'bancolombia', date: '2025-01-18', time: '04:00', account: '****4532', description: 'Suscripción mensual' },
+            { id: 15, type: 'expense', name: 'Alkosto', amount: 356000, bank: 'bancolombia', date: '2025-01-18', time: '16:00', account: '****4532', description: 'Compra en establecimiento' },
+        ];
+
+        let filteredTransactions = [...sampleTransactions];
+        let currentTypeFilter = 'all';
+
+        // Verificar autenticación
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = 'alex-landing.html';
+                return null;
+            }
+            return session;
+        }
+
+        // Cargar datos del usuario
+        async function loadUserData() {
+            const session = await checkAuth();
+            if (session) {
+                const user = session.user;
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userAvatar').textContent = user.email.charAt(0).toUpperCase();
+            }
+        }
+
+        // Logout
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'alex-landing.html';
+        }
+
+        // Formatear moneda
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(amount).replace('COP', '$');
+        }
+
+        // Formatear fecha
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (date.toDateString() === today.toDateString()) return 'Hoy';
+            if (date.toDateString() === yesterday.toDateString()) return 'Ayer';
+            return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+        }
+
+        // Renderizar transacciones
+        function renderTransactions() {
+            const container = document.getElementById('transactionsList');
+            const countEl = document.getElementById('txCount');
+
+            if (filteredTransactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <div class="empty-title">No se encontraron movimientos</div>
+                        <div class="empty-text">Intenta con otros filtros</div>
+                    </div>
+                `;
+                countEl.textContent = 'Sin resultados';
+                return;
+            }
+
+            countEl.textContent = `Mostrando ${filteredTransactions.length} movimientos (datos de ejemplo)`;
+
+            container.innerHTML = filteredTransactions.map(tx => `
+                <div class="transaction-item">
+                    <div class="tx-left">
+                        <div class="tx-icon ${tx.type}">${tx.type === 'income' ? '↓' : '↑'}</div>
+                        <div class="tx-info">
+                            <div class="tx-name">${tx.name}</div>
+                            <div class="tx-details">
+                                <span class="tx-bank-dot ${tx.bank}"></span>
+                                ${tx.bank.charAt(0).toUpperCase() + tx.bank.slice(1)} • ${formatDate(tx.date)} ${tx.time} • ${tx.account}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${formatCurrency(tx.amount)}</div>
+                        <div class="tx-balance">${tx.description}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filtrar
+        function filterTransactions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const bankFilter = document.getElementById('bankFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
+            filteredTransactions = sampleTransactions.filter(tx => {
+                const matchesSearch = !searchTerm || 
+                    tx.name.toLowerCase().includes(searchTerm) ||
+                    tx.description.toLowerCase().includes(searchTerm);
+                const matchesType = currentTypeFilter === 'all' || tx.type === currentTypeFilter;
+                const matchesBank = bankFilter === 'all' || tx.bank === bankFilter;
+                const matchesDateFrom = !dateFrom || tx.date >= dateFrom;
+                const matchesDateTo = !dateTo || tx.date <= dateTo;
+
+                return matchesSearch && matchesType && matchesBank && matchesDateFrom && matchesDateTo;
+            });
+
+            renderTransactions();
+            updateStats();
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const income = filteredTransactions.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
+            const expense = filteredTransactions.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
+
+            document.getElementById('totalIncome').textContent = '+' + formatCurrency(income);
+            document.getElementById('totalExpense').textContent = '-' + formatCurrency(expense);
+            document.getElementById('balance').textContent = formatCurrency(income - expense);
+            document.getElementById('totalTx').textContent = filteredTransactions.length;
+        }
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', filterTransactions);
+        document.getElementById('bankFilter').addEventListener('change', filterTransactions);
+        document.getElementById('dateFrom').addEventListener('change', filterTransactions);
+        document.getElementById('dateTo').addEventListener('change', filterTransactions);
+
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTypeFilter = btn.dataset.type;
+                filterTransactions();
+            });
+        });
+
+        document.getElementById('clearFilters').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('bankFilter').value = 'all';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.type-btn[data-type="all"]').classList.add('active');
+            currentTypeFilter = 'all';
+            filterTransactions();
+        });
+
+        // Inicializar
+        loadUserData();
+        renderTransactions();
+        updateStats();
+    </script>
+</body>
+</html>
