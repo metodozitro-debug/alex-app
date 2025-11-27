@@ -6,6 +6,8 @@
     <title>Configuración - ALEX</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="bank-parsers.js"></script>
+    <script src="gmail-handler.js"></script>
     <style>
         * {
             margin: 0;
@@ -329,6 +331,30 @@
             border-color: #dc2626;
         }
 
+        .btn-sync {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sync:hover:not(:disabled) {
+            background: #1e3a8a;
+        }
+
+        .btn-sync:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .loading {
             text-align: center;
             padding: 3rem;
@@ -433,6 +459,17 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cGNpbHZlenp4bXRyaWxnYXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwODM0MDYsImV4cCI6MjA3OTY1OTQwNn0.42EEcyW9e_-Wz7SpDNTumhfvbAGKPLIzr4c5FDw3npQ';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Inicializar Gmail Handler
+        let gmailHandler = null;
+        
+        async function initGmailHandler() {
+            if (!gmailHandler) {
+                gmailHandler = new GmailHandler(supabase);
+                await gmailHandler.initializeGoogleAPI();
+            }
+            return gmailHandler;
+        }
+
         // Verificar autenticación
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -503,6 +540,10 @@
                         </div>
                     </div>
                     <div class="email-actions">
+                        <button class="btn-sync" onclick="syncEmail('${email.email}')" title="Sincronizar alertas ahora">
+                            <i class="fas fa-sync-alt"></i>
+                            Sincronizar
+                        </button>
                         <label class="toggle-switch">
                             <input type="checkbox" ${email.is_active ? 'checked' : ''} 
                                    onchange="toggleEmail('${email.id}', this.checked)">
@@ -530,8 +571,68 @@
         }
 
         // Conectar nuevo correo
-        function connectNewEmail() {
-            alert('Funcionalidad en desarrollo.\n\nPróximamente podrás conectar múltiples cuentas de Gmail para sincronizar automáticamente tus alertas bancarias.');
+        async function connectNewEmail() {
+            try {
+                const handler = await initGmailHandler();
+                
+                // Mostrar mensaje de carga
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'connectingOverlay';
+                loadingDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;';
+                loadingDiv.innerHTML = '<div style="background:white;padding:2rem;border-radius:12px;text-align:center;"><div class="spinner"></div><p style="margin-top:1rem;color:#374151;">Conectando con Gmail...</p></div>';
+                document.body.appendChild(loadingDiv);
+                
+                // Solicitar acceso
+                const result = await handler.requestGmailAccess();
+                
+                // Remover overlay
+                document.body.removeChild(loadingDiv);
+                
+                // Sincronizar alertas inmediatamente
+                alert(`✅ Correo ${result.email} conectado exitosamente!\n\nSincronizando alertas bancarias...`);
+                
+                const count = await handler.syncBankAlerts(result.email);
+                
+                alert(`✅ Sincronización completa!\n\n${count} transacciones importadas.`);
+                
+                // Recargar lista de correos
+                loadConnectedEmails();
+                
+            } catch (error) {
+                console.error('Error connecting email:', error);
+                
+                // Remover overlay si existe
+                const overlay = document.getElementById('connectingOverlay');
+                if (overlay) document.body.removeChild(overlay);
+                
+                alert('❌ Error al conectar correo. Por favor intenta nuevamente.');
+            }
+        }
+
+        // Sincronizar correo manualmente
+        async function syncEmail(email) {
+            try {
+                const handler = await initGmailHandler();
+                
+                const button = event.target.closest('.btn-sync');
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+                
+                const count = await handler.syncBankAlerts(email);
+                
+                alert(`✅ Sincronización completa!\n\n${count} transacciones importadas de ${email}`);
+                
+                // Recargar lista para actualizar last_sync_at
+                loadConnectedEmails();
+                
+            } catch (error) {
+                console.error('Error syncing email:', error);
+                alert('❌ Error al sincronizar. Verifica que el correo esté conectado correctamente.');
+                
+                const button = event.target.closest('.btn-sync');
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar';
+            }
         }
 
         // Activar/desactivar correo
