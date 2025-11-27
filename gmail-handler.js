@@ -202,9 +202,9 @@ class GmailHandler {
 
             // Queries para cada banco
             const queries = [
-                'from:notificaciones@bancolombia.com.co',
-                'from:noreply@nequi.com.co',
-                'from:daviplata@davivienda.com'
+                'from:alertasynotificaciones@an.notificacionesbancolombia.com OR from:notificaciones@bancolombia.com.co',
+                'from:noreply@nequi.com.co OR from:notificaciones@nequi.com.co',
+                'from:daviplata@davivienda.com OR from:noreply@davivienda.com'
             ];
 
             let allTransactions = [];

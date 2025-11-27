@@ -7,7 +7,7 @@ class BankParsers {
     static identifyBank(message) {
         const from = this.getHeader(message, 'From')?.toLowerCase() || '';
         
-        if (from.includes('bancolombia')) return 'Bancolombia';
+        if (from.includes('bancolombia') || from.includes('alertasynotificaciones')) return 'Bancolombia';
         if (from.includes('nequi')) return 'Nequi';
         if (from.includes('daviplata') || from.includes('davivienda')) return 'Daviplata';
         
