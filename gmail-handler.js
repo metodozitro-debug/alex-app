@@ -258,8 +258,15 @@ class GmailHandler {
             const { data: { user } } = await this.supabase.auth.getUser();
             
             const transactionsWithUser = transactions.map(t => ({
-                ...t,
                 user_id: user.id,
+                type: t.type,
+                name: t.description || 'Transacción', // Usar description como name (requerido)
+                amount: t.amount,
+                bank: t.bank,
+                date: t.date.split('T')[0], // Solo la fecha (YYYY-MM-DD)
+                description: t.description,
+                category: t.category,
+                email_id: t.message_id, // message_id -> email_id
                 created_at: new Date().toISOString()
             }));
 
